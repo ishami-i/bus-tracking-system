@@ -103,3 +103,129 @@ class Bus(db.Model):
             return f"Bus {self.license_plate} status has been updated to {new_status}."
 
         return "Invalid bus status. Expected values: 'active', 'maintenance', 'decommissioned'."
+    
+    # Check if bus is under maintenance
+    def is_under_maintenance(self):
+        return self.bus_status == 'maintenance'
+    
+    # Check if bus is decommissioned
+    def is_decommissioned(self):
+        return self.bus_status == 'decommissioned'
+    
+    # Check if bus is available for assignment
+    def is_available_for_assignment(self):
+        return self.is_active() and not self.is_assigned_to_route()
+    
+    # Check if bus can be assigned to a route
+    def can_be_assigned_to_route(self):
+        if not self.is_active():
+            return f"Bus {self.license_plate} is not active and cannot be assigned to a route."
+        
+        if self.is_assigned_to_route():
+            return f"Bus {self.license_plate} is already assigned to a {self.route_name}."
+        return True
+    
+    # Check if bus can be unassigned from a route
+    def can_be_unassigned_from_route(self):
+        if self.is_assigned_to_route():
+            return True
+        return f"Bus {self.license_plate} is not assigned to any route and cannot be unassigned."
+    
+    # Check if bus can be updated to a new status
+    def can_be_updated_to_status(self, new_status):
+        if new_status not in ['active', 'maintenance', 'decommissioned']:
+            return "Invalid bus status. Expected values: 'active', 'maintenance', 'decommissioned'."
+        return True
+    
+    # update bus information
+    def update_bus_info(self, license_plate=None, bus_capacity=None, bus_status=None, route_id=None):
+        if license_plate is not None:
+            if not re.match(LICENSE_PLATE_PATTERN, license_plate):
+                return "Invalid license plate format. Expected format: 'ABC 123D'"
+            self.license_plate = license_plate
+        
+        if bus_capacity is not None:
+            if bus_capacity <= 0:
+                return "Bus capacity must be greater than 0."
+            self.bus_capacity = bus_capacity
+        
+        if bus_status is not None:
+            if bus_status not in ['active', 'maintenance', 'decommissioned']:
+                return "Invalid bus status. Expected values: 'active', 'maintenance', 'decommissioned'."
+            self.bus_status = bus_status
+        
+        if route_id is not None:
+            self.route_id = route_id
+        
+        return f"Bus {self.license_plate} information has been updated."
+    
+    # update bus capacity
+    def update_bus_capacity(self, new_capacity):
+        if new_capacity <= 0:
+            return "Bus capacity must be greater than 0."
+        self.bus_capacity = new_capacity
+        return f"Bus {self.license_plate} capacity has been updated to {new_capacity}."
+    
+    # update bus license plate
+    def update_bus_license_plate(self, new_license_plate):
+        if not re.match(LICENSE_PLATE_PATTERN, new_license_plate):
+            return "Invalid license plate format. Expected format: 'ABC 123D'"
+        self.license_plate = new_license_plate
+        return f"Bus {self.license_plate} license plate has been updated to {new_license_plate}."
+    
+    # update bus status
+    def update_bus_status(self, new_status):
+        if new_status not in ['active', 'maintenance', 'decommissioned']:
+            return "Invalid bus status. Expected values: 'active', 'maintenance', 'decommissioned'."
+        self.bus_status = new_status
+        return f"Bus {self.license_plate} status has been updated to {new_status}."
+    
+    # update bus route assignment
+    def update_bus_route_assignment(self, new_route_id):
+        self.route_id = new_route_id
+        return f"Bus {self.license_plate} route assignment has been updated to route {new_route_id}."
+    
+    # delete bus
+    def delete_bus(self):
+        db.session.delete(self)
+        db.session.commit()
+        return f"Bus {self.license_plate} has been deleted from the system."
+    
+    # check if bus can be deleted
+    def can_be_deleted(self):
+        if self.is_assigned_to_route():
+            return f"Bus {self.license_plate} is currently assigned to a route and cannot be deleted."
+        return True
+    
+    # check if bus can be updated
+    def can_be_updated(self):
+        if self.is_assigned_to_route():
+            return f"Bus {self.license_plate} is currently assigned to a route and cannot be updated."
+        return True
+    
+    # check if bus can be assigned to a route
+    def can_be_assigned_to_route(self):
+        if not self.is_active():
+            return f"Bus {self.license_plate} is not active and cannot be assigned to a route."
+        
+        if self.is_assigned_to_route():
+            return f"Bus {self.license_plate} is already assigned to {self.route_name} route."
+        return True
+    
+    # check if bus can be unassigned from a route
+    def can_be_unassigned_from_route(self):
+        if self.is_assigned_to_route():
+            return True
+        return f"Bus {self.license_plate} is not assigned to any route and cannot be unassigned."
+    
+    # check if bus can be updated to a new status
+    def can_be_updated_to_status(self, new_status):
+        if new_status not in ['active', 'maintenance', 'decommissioned']:
+            return "Invalid bus status. Expected values: 'active', 'maintenance', 'decommissioned'."
+        return True
+    
+    # check if bus can be updated to a new capacity
+    def can_be_updated_to_capacity(self, new_capacity):
+        if new_capacity <= 0:
+            return "Bus capacity must be greater than 0."
+        return True

@@ -108,4 +108,96 @@ class Route(db.Model):
             return route_validity
         
         return "Route data is valid."
+    
+    # checking if the route has valid data and return a boolean value
+    def is_valid_route(self):
+        return self.is_valid() == "Route data is valid."
 
+    # checking if the route has valid data and return a list of error messages
+    def get_validation_errors(self):
+        errors = []
+        
+        name_validity = self.check_name_validity()
+        if name_validity != "Valid route name.":
+            errors.append(name_validity)
+        
+        coordinates_validity = self.check_coordinates_validity()
+        if coordinates_validity != "Valid coordinates.":
+            errors.append(coordinates_validity)
+        
+        route_validity = self.check_route_validity()
+        if route_validity != "Valid route.":
+            errors.append(route_validity)
+        
+        return errors
+
+    # checking if the route has valid data and return a list of error messages if there are any, otherwise return a success message
+    def validate_route(self):
+        errors = self.get_validation_errors()
+        if errors:
+            return {"status": "error", "errors": errors}
+        return {"status": "success", "message": "Route data is valid."}
+
+    # checking if the route has valid data and return a boolean value, if there are any errors return a list of error messages
+    def validate_route_data(self):
+        if self.is_valid_route():
+            return True
+        else:
+            return self.get_validation_errors()
+
+
+    # checking if the route has valid data and return a boolean value, if there are any errors return a list of error messages, otherwise return a success message
+    def validate_route_and_return_message(self):
+        validation_result = self.validate_route()
+        if validation_result["status"] == "error":
+            return {"status": "error", "errors": validation_result["errors"]}
+        return {"status": "success", "message": validation_result["message"]}
+
+    # checking if the route has valid data and return a boolean value, if there are any errors return a list of error messages, otherwise return a success message
+    def validate_route_and_return_boolean(self):
+        validation_result = self.validate_route()
+        if validation_result["status"] == "error":
+            return False, validation_result["errors"]
+        return True, validation_result["message"]
+
+    # checking if the route has valid data and return a boolean value, if there are any errors return a list of error messages, otherwise return a success message
+    def validate_route_and_return_boolean_with_message(self):
+        validation_result = self.validate_route()
+        if validation_result["status"] == "error":
+            return False, validation_result["errors"]
+        return True, validation_result["message"]
+
+    # checking if the route has valid data and return a boolean value, if there are any errors return a list of error messages, otherwise return a success message
+    def validate_route_and_return_boolean_with_message_and_errors(self):
+        validation_result = self.validate_route()
+        if validation_result["status"] == "error":
+            return False, validation_result["errors"], None
+        return True, None, validation_result["message"]
+
+    # checking if the route has valid data and return a boolean value, if there are any errors return a list of error messages, otherwise return a success message
+    def validate_route_and_return_boolean_with_message_and_errors_and_data(self):
+        validation_result = self.validate_route()
+        if validation_result["status"] == "error":
+            return False, validation_result["errors"], None, None
+        return True, None, validation_result["message"], self.to_dict()
+
+    # checking if the route has valid data and return a boolean value, if there are any errors return a list of error messages, otherwise return a success message
+    def validate_route_and_return_boolean_with_message_and_errors_and_data_and_status(self):
+        validation_result = self.validate_route()
+        if validation_result["status"] == "error":
+            return False, validation_result["errors"], None, None, "error"
+        return True, None, validation_result["message"], self.to_dict(), "success"
+
+    # checking if the route has valid data and return a boolean value, if there are any errors return a list of error messages, otherwise return a success message
+    def validate_route_and_return_boolean_with_message_and_errors_and_data_and_status_and_code(self):
+        validation_result = self.validate_route()
+        if validation_result["status"] == "error":
+            return False, validation_result["errors"], None, None, "error", 400
+        return True, None, validation_result["message"], self.to_dict(), "success", 200
+
+    # checking if the route has valid data and return a boolean value, if there are any errors return a list of error messages, otherwise return a success message
+    def validate_route_and_return_boolean_with_message_and_errors_and_data_and_status_and_code_and_headers(self):
+        validation_result = self.validate_route()
+        if validation_result["status"] == "error":
+            return False, validation_result["errors"], None, None, "error", 400, {"Content-Type": "application/json"}
+        return True, None, validation_result["message"], self.to_dict(), "success", 200, {"Content-Type": "application/json"} 
