@@ -26,7 +26,6 @@ class BusRequest(db.Model):
         self.trip_id = trip_id
         self.passenger_id = passenger_id
         self.passenger_status = passenger_status
-        self.request_code = f'request-{self.request_id}'  # This will be set after the object is added to the session and committed
 
 
     # check if every required field is provided if not raise an error, and provide field to be provided with data 
@@ -53,7 +52,7 @@ class BusRequest(db.Model):
         from .stop import Stop
 
         if not Trip.query.get(self.trip_id):
-            raise ValueError(f"Trip with ID {self.trip_code} does not exist.")
+            raise ValueError(f"Trip with ID {self.trip_id} does not exist.")
         if not Passenger.query.get(self.passenger_id):
             raise ValueError(f"Passenger with ID {self.passenger_id} does not exist.")
         if self.stop_id and not Stop.query.get(self.stop_id):
@@ -65,7 +64,7 @@ class BusRequest(db.Model):
 
         trip = Trip.query.get(self.trip_id)
         if trip.status == 'completed' or trip.status == 'cancelled':
-            raise ValueError(f"Trip with ID {self.trip_code} is already completed. Cannot create a bus request for a completed trip.")
+            raise ValueError(f"Trip with ID {self.trip_id} is already completed. Cannot create a bus request for a completed trip.")
         else:
             valid_statuses = ['pending', 'picked_up']
             if self.passenger_status not in valid_statuses:

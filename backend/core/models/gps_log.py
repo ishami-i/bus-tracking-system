@@ -31,7 +31,6 @@ class GPSLog(db.Model):
         self.latitude = latitude
         self.bus_id = bus_id
         self.trip_id = trip_id
-        self.log_code = f'gpslog-{self.log_id}'
     
     def to_dict(self):
         return {
@@ -45,7 +44,7 @@ class GPSLog(db.Model):
         }
     
     # validity of the longitude and latitude, they should be within the valid range of -180 to 180 for longitude and -90 to 90 for latitude
-   def is_valid_coordinates(self):
+    def is_valid_coordinates(self):
         lon = float(self.longitude)
         lat = float(self.latitude)
         if not (-180 <= lon <= 180):
@@ -53,13 +52,14 @@ class GPSLog(db.Model):
         if not (-90 <= lat <= 90):
             return "Invalid latitude. It must be between -90 and 90."
         return True
-        # check if the bus_id is valid, it should exist in the buses table
-        def is_valid_bus_id(self):
-            from .bus import Bus
-            bus = Bus.query.get(self.bus_id)
-            if bus is None:
-                return "Invalid bus_id. It must reference an existing bus."
-            return True
+
+    # check if the bus_id is valid, it should exist in the buses table
+    def is_valid_bus_id(self):
+        from .bus import Bus
+        bus = Bus.query.get(self.bus_id)
+        if bus is None:
+            return "Invalid bus_id. It must reference an existing bus."
+        return True
     
     # check if the trip_id is valid, it should exist in the trips table
     def is_valid_trip_id(self):
@@ -71,11 +71,11 @@ class GPSLog(db.Model):
     
     # check if the GPS log is valid, which means it has valid coordinates and valid bus_id and trip_id (if not null)
     def is_valid_gps_log(self):
-        if not self.is_valid_coordinates():
+        if self.is_valid_coordinates() is not True:
             return "Invalid GPS log. The coordinates are not valid."
-        if self.bus_id is not None and not self.is_valid_bus_id():
+        if self.bus_id is not None and self.is_valid_bus_id() is not True:
             return "Invalid GPS log. The bus_id is not valid."
-        if self.trip_id is not None and not self.is_valid_trip_id():
+        if self.trip_id is not None and self.is_valid_trip_id() is not True:
             return "Invalid GPS log. The trip_id is not valid."
         return True
     
@@ -100,13 +100,13 @@ class GPSLog(db.Model):
     
     # check if the GPS log is valid, which means it has valid coordinates, valid bus_id and trip_id (if not null), and valid timestamp
     def is_valid(self):
-        if not self.is_valid_coordinates():
+        if self.is_valid_coordinates() is not True:
             return "Invalid GPS log. The coordinates are not valid."
-        if self.bus_id is not None and not self.is_valid_bus_id():
+        if self.bus_id is not None and self.is_valid_bus_id() is not True:
             return "Invalid GPS log. The bus_id is not valid."
-        if self.trip_id is not None and not self.is_valid_trip_id():
+        if self.trip_id is not None and self.is_valid_trip_id() is not True:
             return "Invalid GPS log. The trip_id is not valid."
-        if not self.is_valid_timestamp():
+        if self.is_valid_timestamp() is not True:
             return "Invalid GPS log. The timestamp is not valid."
         return True
     

@@ -44,7 +44,7 @@ class Trip(db.Model):
         }
     
     # checkign if the trip is status of the trip is xo0mpleted, in_progress, cancelled, or scheduled, and return the status of the trip
-   def check_status(self):
+    def check_status(self):
         if self.status == 'completed':
             return f"The {self.trip_code} is completed."
         elif self.status == 'in_progress':
@@ -56,6 +56,15 @@ class Trip(db.Model):
         else:
             return f"The {self.trip_code} has an unknown status."
         
+    # check if the trip has a credible starting time (not in future for ongoing/completed, not in past for scheduled)
+    def has_credible_starting_time(self):
+        now = datetime.now()
+        if self.status in ['in_progress', 'completed'] and self.starting_time > now:
+            return False
+        if self.status == 'scheduled' and self.starting_time < now:
+            return False
+        return True
+
     # check the credibility of the trip time, if the starting time is in the past, then the trip is shceduled or in progress, if the starting time is in the future, then the trip is scheduled, if the starting time is in the past and the status is not completed, then the trip is cancelled
     def check_time_credibility(self):
         now = datetime.now()

@@ -23,7 +23,6 @@ class Driver(db.Model):
     def __init__(self, user_id, bus_id=None):
         self.user_id = user_id
         self.bus_id = bus_id
-        self.driver_code = f'driver-{self.driver_id}'
 
     def to_dict(self):
         return {
