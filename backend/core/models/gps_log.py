@@ -13,7 +13,7 @@ CREATE TABLE gps_logs (
 
 import datetime
 from . import db
-from trips import Trip
+from .trip import Trip
 
 class GPSLog(db.Model):
     __tablename__ = 'gps_logs'
@@ -45,20 +45,21 @@ class GPSLog(db.Model):
         }
     
     # validity of the longitude and latitude, they should be within the valid range of -180 to 180 for longitude and -90 to 90 for latitude
-    def is_valid_coordinates(self):
-        if not (-180 <= self.longitude <= 180):
+   def is_valid_coordinates(self):
+        lon = float(self.longitude)
+        lat = float(self.latitude)
+        if not (-180 <= lon <= 180):
             return "Invalid longitude. It must be between -180 and 180."
-        if not (-90 <= self.latitude <= 90):
+        if not (-90 <= lat <= 90):
             return "Invalid latitude. It must be between -90 and 90."
         return True
-    
-    # check if the bus_id is valid, it should exist in the buses table
-    def is_valid_bus_id(self):
-        from .bus import Bus
-        bus = Bus.query.get(self.bus_id)
-        if bus is None:
-            return "Invalid bus_id. It must reference an existing bus."
-        return True
+        # check if the bus_id is valid, it should exist in the buses table
+        def is_valid_bus_id(self):
+            from .bus import Bus
+            bus = Bus.query.get(self.bus_id)
+            if bus is None:
+                return "Invalid bus_id. It must reference an existing bus."
+            return True
     
     # check if the trip_id is valid, it should exist in the trips table
     def is_valid_trip_id(self):

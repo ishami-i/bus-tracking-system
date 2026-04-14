@@ -61,10 +61,15 @@ class Passenger(db.Model):
     
     # check if the passenger is valid, which means it has a valid user_id and a valid tap_go_number (if not anonymous)
     def is_valid_passenger(self):
-        if not self.is_valid_user_id():
+        user_check = self.is_valid_user_id()
+        if user_check is not True:
             return "Invalid passenger. The user_id is not valid."
-        if not self.is_anonymous() and not self.is_valid_tap_go_number():
-            return "Invalid passenger. The tap_go_number is not valid."
+
+        if not self.is_anonymous():
+            tap_check = self.is_valid_tap_go_number()
+            if tap_check is not True:
+                return "Invalid passenger. The tap_go_number is not valid."
+
         return True
     
     # check if the passenger is eligible for prepayment, which means it is registered and has a valid tap_go_number

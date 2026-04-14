@@ -73,14 +73,13 @@ class PassengerEvent(db.Model):
     
     # check if the event is valid, which means it has a valid event type, a valid passenger_id, and a valid trip_id
     def is_valid_event(self):
-        if not self.is_valid_event_type():
+        if self.is_valid_event_type() is not True:
             return "Invalid event. The event type is not valid."
-        if not self.is_valid_passenger():
+        if self.is_valid_passenger() is not True:
             return "Invalid event. The passenger_id is not valid."
-        if not self.is_valid_trip():
+        if self.is_valid_trip() is not True:
             return "Invalid event. The trip_id is not valid."
         return True
-    
     # check if the event is a boarding event, which means it is a tap on event
     def is_boarding_event(self):
         return self.is_tap_on()

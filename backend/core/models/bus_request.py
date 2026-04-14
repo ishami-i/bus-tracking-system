@@ -8,6 +8,7 @@ request_id SERIAL PRIMARY KEY,
     request_time TIMESTAMP NOT NULL DEFAULT NOW()
 '''
 from . import db
+from sqlalchemy import func
 
 class BusRequest(db.Model):
     __tablename__ = 'bus_requests'
@@ -72,16 +73,20 @@ class BusRequest(db.Model):
             
     # check if the bus request is valid for the passenger, for example if the passenger is already picked up then raise an error, and provide the field to be provided with data
     def check_passenger_validity(self):
-        from .passenger import Passenger
+        # Example: disallow multiple pending requests for same passenger & trip
+        existing_pending = BusRequest.query.filter_by(
+            trip_id=self.trip_id,
+            passenger_id=self.passenger_id,
+            passenger_status='pending',
+        ).first()
+        if existing_pending:
+            raise ValueError(
+                f"Passenger with ID {self.passenger_id} already has a pending request for this trip."
+            )
 
-        passenger = Passenger.query.get(self.passenger_id)
-        if passenger.status == 'picked_up' or passenger.status == 'cancelled':
-            raise ValueError(f"Passenger with ID {self.passenger_id} is already picked up. Cannot create a bus request for a passenger who is already picked up.")
-        else:
-            valid_statuses = ['pending', 'picked_up']
-            if self.passenger_status not in valid_statuses:
-                raise ValueError(f"Passenger status must be one of {valid_statuses}.")
-            
+        valid_statuses = ['pending', 'picked_up']
+        if self.passenger_status not in valid_statuses:
+            raise ValueError(f"Passenger status must be one of {valid_statuses}.")
 
     # create a bus request and save it to the database, and return the bus request object
     @staticmethod
@@ -284,7 +289,7 @@ class BusRequest(db.Model):
     # create a method for clasifying the most request by month
     @staticmethod
     def get_most_requested_month():
-        from sqlalchemy import func
+        
 
         most_requested_month = db.session.query(
             func.date_part('month', BusRequest.request_time).label('month'),

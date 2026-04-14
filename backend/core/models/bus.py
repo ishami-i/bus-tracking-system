@@ -95,14 +95,6 @@ class Bus(db.Model):
             return f"Bus {self.license_plate} has been unassigned from its route."
 
         return f"Bus {self.license_plate} is not assigned to any route and cannot be unassigned."
-
-    # Update bus status
-    def update_status(self, new_status):
-        if new_status in ['active', 'maintenance', 'decommissioned']:
-            self.bus_status = new_status
-            return f"Bus {self.license_plate} status has been updated to {new_status}."
-
-        return "Invalid bus status. Expected values: 'active', 'maintenance', 'decommissioned'."
     
     # Check if bus is under maintenance
     def is_under_maintenance(self):
@@ -201,27 +193,6 @@ class Bus(db.Model):
     def can_be_updated(self):
         if self.is_assigned_to_route():
             return f"Bus {self.license_plate} is currently assigned to a route and cannot be updated."
-        return True
-    
-    # check if bus can be assigned to a route
-    def can_be_assigned_to_route(self):
-        if not self.is_active():
-            return f"Bus {self.license_plate} is not active and cannot be assigned to a route."
-        
-        if self.is_assigned_to_route():
-            return f"Bus {self.license_plate} is already assigned to {self.route_name} route."
-        return True
-    
-    # check if bus can be unassigned from a route
-    def can_be_unassigned_from_route(self):
-        if self.is_assigned_to_route():
-            return True
-        return f"Bus {self.license_plate} is not assigned to any route and cannot be unassigned."
-    
-    # check if bus can be updated to a new status
-    def can_be_updated_to_status(self, new_status):
-        if new_status not in ['active', 'maintenance', 'decommissioned']:
-            return "Invalid bus status. Expected values: 'active', 'maintenance', 'decommissioned'."
         return True
     
     # check if bus can be updated to a new capacity

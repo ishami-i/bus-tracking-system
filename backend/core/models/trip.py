@@ -11,6 +11,8 @@ trip_id SERIAL PRIMARY KEY,
 '''
 
 from . import db
+from datetime import datetime
+
 
 class Trip(db.Model):
     __tablename__ = 'trips'
@@ -42,30 +44,29 @@ class Trip(db.Model):
         }
     
     # checkign if the trip is status of the trip is xo0mpleted, in_progress, cancelled, or scheduled, and return the status of the trip
-    def check_status(self):
+   def check_status(self):
         if self.status == 'completed':
-            return "The {self.trip_code} is completed."
+            return f"The {self.trip_code} is completed."
         elif self.status == 'in_progress':
-            return "The {self.trip_code} is in progress."
+            return f"The {self.trip_code} is in progress."
         elif self.status == 'cancelled':
-            return "The {self.trip_code} is cancelled."
+            return f"The {self.trip_code} is cancelled."
         elif self.status == 'scheduled':
-            return "The {self.trip_code} is scheduled."
+            return f"The {self.trip_code} is scheduled."
         else:
-            return "The {self.trip_code} has an unknown status."
+            return f"The {self.trip_code} has an unknown status."
         
     # check the credibility of the trip time, if the starting time is in the past, then the trip is shceduled or in progress, if the starting time is in the future, then the trip is scheduled, if the starting time is in the past and the status is not completed, then the trip is cancelled
     def check_time_credibility(self):
-        from datetime import datetime
         now = datetime.now()
         if self.starting_time < now and self.status in ['scheduled', 'in_progress']:
-            return "The {self.trip_code} is scheduled or in progress, but the starting time is in the past."
+            return f"The {self.trip_code} is scheduled or in progress, but the starting time is in the past."
         elif self.starting_time > now and self.status == 'scheduled':
-            return "The {self.trip_code} is scheduled, but the starting time is in the future."
+            return f"The {self.trip_code} is scheduled, but the starting time is in the future."
         elif self.starting_time < now and self.status != 'completed':
-            return "The {self.trip_code} is cancelled, but the starting time is in the past."
+            return f"The {self.trip_code} is cancelled, but the starting time is in the past."
         else:
-            return "The {self.trip_code} has a credible starting time."
+            return f"The {self.trip_code} has a credible starting time."
         
 
     # check if the trip is completed, if the status is completed and the starting time is in the past, then the trip is completed, otherwise, it is not completed

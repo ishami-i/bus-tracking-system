@@ -55,24 +55,30 @@ class Route(db.Model):
     
     # checking if there is an address for the starting and ending address and return the appropriate message
     def check_address(self):
-        if ({self.starting_address} == None) and ({self.ending_address} == None):
+        if self.starting_address is None and self.ending_address is None:
             return "No starting and ending address"
-        elif {self.starting_address} == None:
+        if self.starting_address is None:
             return "No starting address"
-        elif {self.ending_address} == None:
+        if self.ending_address is None:
             return "No ending address"
-        else:
-            return f"Starting address: {self.starting_address}, Ending address: {self.ending_address}"
+        return f"Starting address: {self.starting_address}, Ending address: {self.ending_address}"
         
     
     # checking for starting, ending address or coardinates being the same and return the appropriate message
     def check_route_validity(self):
-        if (self.starting_address == self.ending_address) and (self.starting_longitude == self.ending_longitude) and (self.starting_latitude == self.ending_latitude):
+        if (
+            self.starting_address == self.ending_address
+            and self.starting_longitude == self.ending_longitude
+            and self.starting_latitude == self.ending_latitude
+        ):
             return "Invalid route: Starting and ending points are the same."
-        elif((self.starting_longitude == self.ending_longitude) == (self.starting_latitude == self.ending_latitude)):
+        if (
+            self.starting_longitude == self.ending_longitude
+            and self.starting_latitude == self.ending_latitude
+        ):
             return "Invalid route: Starting and ending coordinates are the same."
         return "Valid route."
-    
+        
     # checking if the route has valid coordinates and return the appropriate message
     def check_coordinates_validity(self):
         if self.starting_longitude is not None and (self.starting_longitude < -180 or self.starting_longitude > 180):
