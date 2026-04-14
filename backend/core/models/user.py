@@ -69,3 +69,17 @@ class User(db.Model):
             raise ValueError(f'Invalid role. Valid roles are: {", ".join(valid_roles)}')
         else:
             return True
+        
+
+    # This method is used to validate the user data before creating or updating a user
+    @staticmethod
+    def validate_user_data(data):
+        if 'email' not in data:
+            raise ValueError('Missing email field')
+        if 'role' not in data:
+            raise ValueError('Missing role field')
+        
+        User.validate_email(data['email'])
+        if 'telephone' in data:
+            User.validate_telephone(data['telephone'])
+        User.validate_role(data['role'])
