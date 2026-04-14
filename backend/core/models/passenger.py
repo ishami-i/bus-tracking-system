@@ -25,7 +25,6 @@ class Passenger(db.Model):
     def __init__(self, user_id, tap_go_number=None):
         self.user_id = user_id
         self.tap_go_number = tap_go_number
-        self.passenger_code = f'passenger-{self.passenger_id}'
 
     def to_dict(self):
         return {
@@ -74,19 +73,19 @@ class Passenger(db.Model):
     
     # check if the passenger is eligible for prepayment, which means it is registered and has a valid tap_go_number
     def is_eligible_for_prepayment(self):
-        if self.is_registered() and self.is_valid_tap_go_number():
+        if self.is_registered() and self.is_valid_tap_go_number() is True:
             return True
         return False
     
     # check if the passenger is eligible for on bus requests, which means it is either anonymous or registered with a valid tap_go_number
     def is_eligible_for_on_bus_requests(self):
-        if self.is_anonymous() or (self.is_registered() and self.is_valid_tap_go_number()):
+        if self.is_anonymous() or (self.is_registered() and self.is_valid_tap_go_number() is True):
             return True
         return False
     
     # check if the passenger is eligible for both prepayment and on bus requests, which means it is registered with a valid tap_go_number
     def is_eligible_for_both_prepayment_and_on_bus_requests(self):
-        if self.is_registered() and self.is_valid_tap_go_number():
+        if self.is_registered() and self.is_valid_tap_go_number() is True:
             return True
         return False
     

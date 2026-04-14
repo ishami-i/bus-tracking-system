@@ -26,7 +26,6 @@ class User(db.Model):
         self.email = email
         self.telephone = telephone
         self.role = role
-        self.user_code = f'user-{self.user_id}'
     def __repr__(self):
         return f'<User {self.user_code}>'
     
@@ -47,9 +46,8 @@ class User(db.Model):
             else:
                 raise ValueError(f'Missing field: {field}')
     @staticmethod
-    
     # validation of attributes of the user, such as email format and telephone number format
-    def validate_email(self, email):
+    def validate_email(email):
         email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         if not re.match(email_regex, email):
             raise ValueError('Invalid email format')

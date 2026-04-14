@@ -31,7 +31,6 @@ class PassengerEvent(db.Model):
         self.passenger_id = passenger_id
         self.event_type = event_type
         self.event_time = datetime.datetime.now()
-        self.event_code = f'event-{self.event_id}'
     
     def to_dict(self):
         return {
@@ -90,11 +89,11 @@ class PassengerEvent(db.Model):
     
     # check if the event is a valid boarding or outboarding event, which means it is either a tap on or tap off event
     def is_valid_boarding_or_outboarding_event(self):
-        if not self.is_valid_event_type():
+        if self.is_valid_event_type() is not True:
             return "Invalid event. The event type is not valid."
-        if not self.is_valid_passenger():
+        if self.is_valid_passenger() is not True:
             return "Invalid event. The passenger_id is not valid."
-        if not self.is_valid_trip():
+        if self.is_valid_trip() is not True:
             return "Invalid event. The trip_id is not valid."
         return True
     
@@ -102,8 +101,8 @@ class PassengerEvent(db.Model):
     def is_valid_boarding_event(self):
         if not self.is_tap_on():
             return "Invalid boarding event. The event type must be 'tap_on'."
-        if not self.is_valid_passenger():
+        if self.is_valid_passenger() is not True:
             return "Invalid boarding event. The passenger_id is not valid."
-        if not self.is_valid_trip():
+        if self.is_valid_trip() is not True:
             return "Invalid boarding event. The trip_id is not valid."
         return True
