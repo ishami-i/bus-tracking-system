@@ -42,8 +42,7 @@ class BusRepository:
             if cursor:
                 cursor.close()
 
-    def create_bus(self, bus_capacity: int, license_plate: str, 
-                   bus_status: str, route_id: Optional[int] = None) -> Optional[Tuple]:
+    def create_bus(self, bus_capacity: int, license_plate: str, bus_status: str, route_id: Optional[int] = None) -> Optional[Tuple]:
         """Create a new bus and return the bus information.
         
         Args:
