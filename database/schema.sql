@@ -1,21 +1,53 @@
--- BUS SYSTEM DATABASE SCHEMA
--- create the database
-CREATE DATABASE IF NOT EXISTS bus_system;
--- using the database
-USE bus_system;
--- Users (base identity table)
+/* 
+This is the schema file for table and bus_system_db.
+It defines the structure of the database, including tables, relationships, and constraints.
+the PostgreSQL database is used for this project.
+the database is designed to support a bus system, including users, drivers, passengers, routes, stops, trips, and related events.
+the database is created with a focus on data integrity, performance, and scalability, using appropriate data types, constraints, and indexing strategies.
+the bash script with create database and execute this schema file is provided in the database directory.
+*/
+
+-- USERS (base identity)
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
-    user_code TEXT GENERATED ALWAYS AS ('user-' || id) STORED name VARCHAR(100) NOT NULL,
+    user_code TEXT GENERATED ALWAYS AS ('user-' || user_id) STORED,
+    name VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
     telephone VARCHAR(20),
-    role VARCHAR(50) NOT NULL -- e.g. 'admin', 'driver', 'passenger'
+    role VARCHAR(50) NOT NULL CHECK (
+        role IN (
+            'admin',
+            'driver',
+            'passenger',
+            'sales',
+            'coordinator'
+        )
+    )
 );
 
--- Routes
+-- DRIVERS (specialized users)
+
+CREATE TABLE drivers (
+    driver_id SERIAL PRIMARY KEY,
+    driver_code TEXT GENERATED ALWAYS AS ('driver-' || driver_id) STORED,
+    user_id INT NOT NULL REFERENCES users (user_id) ON DELETE CASCADE
+);
+
+-- PASSENGERS (specialized users)
+
+CREATE TABLE passengers (
+    passenger_id SERIAL PRIMARY KEY,
+    passenger_code TEXT GENERATED ALWAYS AS ('passenger-' || passenger_id) STORED,
+    user_id INT NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
+    tap_go_number VARCHAR(50) UNIQUE
+);
+
+-- ROUTES
+
 CREATE TABLE routes (
     route_id SERIAL PRIMARY KEY,
-    route_code TEXT GENERATED ALWAYS AS ('route-' || id) STORED name VARCHAR(100) NOT NULL,
+    route_code TEXT GENERATED ALWAYS AS ('route-' || route_id) STORED,
+    name VARCHAR(100) NOT NULL,
     starting_address VARCHAR(255),
     starting_longitude DECIMAL(10, 7),
     starting_latitude DECIMAL(10, 7),
@@ -24,117 +56,113 @@ CREATE TABLE routes (
     ending_latitude DECIMAL(10, 7)
 );
 
--- Buses
-CREATE TABLE buses (
-    bus_id SERIAL PRIMARY KEY,
-    bus_code TEXT GENERATED ALWAYS AS ('bus-' || id) STORED bus_plate VARCHAR(20) UNIQUE NOT NULL,
-    bus_capacity INT NOT NULL,
-    license_number VARCHAR(10) UNIQUE NOT NULL,
-    bus_status VARCHAR(50) NOT NULL, -- e.g. 'active', 'maintenance', 'decommissioned'
-    route_id INT REFERENCES routes (route_id) ON DELETE SET NULL
-);
+-- STOPS
 
--- Drivers (linked to a user and assigned a bus)
-CREATE TABLE drivers (
-    driver_id SERIAL PRIMARY KEY,
-    driver_code TEXT GENERATED ALWAYS AS ('driver-' || id) STORED user_id INT NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
-    bus_id INT REFERENCES buses (bus_id) ON DELETE SET NULL
-);
-
--- Passengers (linked to a user)
-CREATE TABLE passengers (
-    passenger_id SERIAL PRIMARY KEY,
-    passenger_code TEXT GENERATED ALWAYS AS ('passenger-' || id) STORED user_id INT NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
-    tap_go_number VARCHAR(50) UNIQUE -- transit card / tap-and-go identifier
-);
-
--- Stops (physical bus stop locations)
 CREATE TABLE stops (
     stop_id SERIAL PRIMARY KEY,
-    stop_code TEXT GENERATED ALWAYS AS ('stop-' || id) STORED stop_name VARCHAR(100) NOT NULL,
+    stop_code TEXT GENERATED ALWAYS AS ('stop-' || stop_id) STORED,
+    stop_name VARCHAR(100) NOT NULL,
     location VARCHAR(255),
     longitude DECIMAL(10, 7),
-    latitude DECIMAL(10, 7) -- note: ERD shows "lotitude" — corrected to latitude
+    latitude DECIMAL(10, 7)
 );
 
--- Route Stops (many-to-many: which stops belong to which route, in what order)
+-- ROUTE_STOPS (ordering)
+
 CREATE TABLE route_stops (
     route_stop_id SERIAL PRIMARY KEY,
-    stop_id INT NOT NULL REFERENCES stops (stop_id) ON DELETE CASCADE,
     route_id INT NOT NULL REFERENCES routes (route_id) ON DELETE CASCADE,
-    stop_order INT NOT NULL
+    stop_id INT NOT NULL REFERENCES stops (stop_id) ON DELETE CASCADE,
+    stop_order INT NOT NULL,
+    UNIQUE (route_id, stop_order)
 );
 
--- Trips (a scheduled run of a route by a driver)
+-- BUSES
+
+CREATE TABLE buses (
+    bus_id SERIAL PRIMARY KEY,
+    bus_code TEXT GENERATED ALWAYS AS ('bus-' || bus_id) STORED,
+    license_plate VARCHAR(20) UNIQUE NOT NULL,
+    bus_capacity INT NOT NULL CHECK (bus_capacity > 0),
+    bus_status VARCHAR(50) NOT NULL CHECK (
+        bus_status IN (
+            'active',
+            'maintenance',
+            'decommissioned'
+        )
+    )
+);
+
+-- TRIPS (core operational unit)
+
 CREATE TABLE trips (
     trip_id SERIAL PRIMARY KEY,
-    trip_code TEXT GENERATED ALWAYS AS ('trip-' || id) STORED route_id INT REFERENCES routes (route_id) ON DELETE SET NULL,
+    trip_code TEXT GENERATED ALWAYS AS ('trip-' || trip_id) STORED,
+    route_id INT REFERENCES routes (route_id) ON DELETE SET NULL,
     driver_id INT REFERENCES drivers (driver_id) ON DELETE SET NULL,
-    event_id INT, -- FK to passenger_events (set after table creation)
+    bus_id INT REFERENCES buses (bus_id) ON DELETE SET NULL,
     starting_time TIMESTAMP NOT NULL,
-    status VARCHAR(50) NOT NULL -- e.g. 'scheduled', 'in_progress', 'completed', 'cancelled'
+    status VARCHAR(50) NOT NULL CHECK (
+        status IN (
+            'scheduled',
+            'in_progress',
+            'completed',
+            'cancelled'
+        )
+    )
 );
 
--- Passenger Events (tap-on / tap-off events during a trip)
+-- PASSENGER EVENTS (tap in/out)
+
 CREATE TABLE passenger_events (
     event_id SERIAL PRIMARY KEY,
-    event_code TEXT GENERATED ALWAYS AS ('event-' || id) STORED trip_id INT NOT NULL REFERENCES trips (trip_id) ON DELETE CASCADE,
+    event_code TEXT GENERATED ALWAYS AS ('event-' || event_id) STORED,
+    trip_id INT NOT NULL REFERENCES trips (trip_id) ON DELETE CASCADE,
     passenger_id INT NOT NULL REFERENCES passengers (passenger_id) ON DELETE CASCADE,
-    event_type VARCHAR(50) NOT NULL, -- e.g. 'tap_on', 'tap_off'
-    event_time TIMESTAMP NOT NULL
+    event_type VARCHAR(50) NOT NULL CHECK (
+        event_type IN ('tap_on', 'tap_off')
+    ),
+    event_time TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- Add the FK from trips.event_id → passenger_events.event_id (circular ref, deferred)
-ALTER TABLE trips
-ADD CONSTRAINT fk_trips_event FOREIGN KEY (event_id) REFERENCES passenger_events (event_id) DEFERRABLE INITIALLY DEFERRED;
+-- GPS LOGS (history tracking)
 
--- GPS Logs (real-time location tracking per bus/trip)
 CREATE TABLE gps_logs (
     log_id SERIAL PRIMARY KEY,
-    log_code TEXT GENERATED ALWAYS AS ('gpslog-' || id) STORED longitude DECIMAL(10, 7) NOT NULL,
+    log_code TEXT GENERATED ALWAYS AS ('gpslog-' || log_id) STORED,
     latitude DECIMAL(10, 7) NOT NULL,
-    timestamps TIMESTAMP NOT NULL DEFAULT NOW(),
+    longitude DECIMAL(10, 7) NOT NULL,
+    recorded_at TIMESTAMP NOT NULL DEFAULT NOW(),
     bus_id INT REFERENCES buses (bus_id) ON DELETE SET NULL,
     trip_id INT REFERENCES trips (trip_id) ON DELETE SET NULL
 );
 
--- Bus Requests (passenger requests to board at a stop on a trip)
+-- BUS REQUESTS (stop requests)
+
 CREATE TABLE bus_requests (
     request_id SERIAL PRIMARY KEY,
-    request_code TEXT GENERATED ALWAYS AS ('request-' || id) STORED stop_id INT REFERENCES stops (stop_id) ON DELETE SET NULL,
+    request_code TEXT GENERATED ALWAYS AS ('request-' || request_id) STORED,
+    stop_id INT REFERENCES stops (stop_id) ON DELETE SET NULL,
     trip_id INT REFERENCES trips (trip_id) ON DELETE CASCADE,
     passenger_id INT REFERENCES passengers (passenger_id) ON DELETE CASCADE,
-    passenger_status VARCHAR(50), -- e.g. 'pending', 'picked_up', 'cancelled'
+    request_status VARCHAR(50) CHECK (
+        request_status IN (
+            'pending',
+            'picked_up',
+            'cancelled'
+        )
+    ),
     request_time TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- INDEXES (recommended for FK columns used in JOINs)
-CREATE INDEX idx_buses_route_id ON buses (route_id);
+-- INDEXES (performance)
 
-CREATE INDEX idx_drivers_user_id ON drivers (user_id);
+CREATE INDEX idx_gps_bus ON gps_logs (bus_id);
 
-CREATE INDEX idx_drivers_bus_id ON drivers (bus_id);
+CREATE INDEX idx_gps_trip ON gps_logs (trip_id);
 
-CREATE INDEX idx_passengers_user_id ON passengers (user_id);
+CREATE INDEX idx_trip_route ON trips (route_id);
 
-CREATE INDEX idx_route_stops_route_id ON route_stops (route_id);
+CREATE INDEX idx_trip_driver ON trips (driver_id);
 
-CREATE INDEX idx_route_stops_stop_id ON route_stops (stop_id);
-
-CREATE INDEX idx_trips_route_id ON trips (route_id);
-
-CREATE INDEX idx_trips_driver_id ON trips (driver_id);
-
-CREATE INDEX idx_passenger_events_trip_id ON passenger_events (trip_id);
-
-CREATE INDEX idx_passenger_events_pax_id ON passenger_events (passenger_id);
-
-CREATE INDEX idx_gps_logs_bus_id ON gps_logs (bus_id);
-
-CREATE INDEX idx_gps_logs_trip_id ON gps_logs (trip_id);
-
-CREATE INDEX idx_bus_requests_trip_id ON bus_requests (trip_id);
-
-CREATE INDEX idx_bus_requests_pax_id ON bus_requests (passenger_id);
-
-CREATE INDEX idx_bus_requests_stop_id ON bus_requests (stop_id);
+CREATE INDEX idx_passenger_trip ON passenger_events (trip_id);
