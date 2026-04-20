@@ -1,4 +1,42 @@
-"""
+# Example: Proper Constants Definition
+VALID_ROLES = {'admin', 'driver', 'passenger', 'sales', 'coordinator'}
+VALID_BUS_STATUSES = {'active', 'maintenance', 'decommissioned'}
+VALID_TRIP_STATUSES = {'scheduled', 'in_progress', 'completed', 'cancelled'}
+VALID_EVENT_TYPES = {'tap_on', 'tap_off'}
+VALID_REQUEST_STATUSES = {'pending', 'picked_up', 'cancelled'}
+
+# Example: Reusable SELECT Fields
+USER_SELECT = "user_id, user_code, name, email, telephone, role"
+BUS_SELECT = "bus_id, bus_code, license_plate, bus_capacity, bus_status"
+TRIP_SELECT = "trip_id, trip_code, route_id, driver_id, bus_id, starting_time, status"
+
+# Example: Input Validation Pattern
+def _validate_input(self, **kwargs):
+    """Centralized validation"""
+    for field, value in kwargs.items():
+        if field == 'role' and value not in VALID_ROLES:
+            raise ValueError(f"Invalid role: {value}")
+        if field == 'email' and not self._is_valid_email(value):
+            raise ValueError(f"Invalid email: {value}")            # Example: Proper Constants Definition
+            VALID_ROLES = {'admin', 'driver', 'passenger', 'sales', 'coordinator'}
+            VALID_BUS_STATUSES = {'active', 'maintenance', 'decommissioned'}
+            VALID_TRIP_STATUSES = {'scheduled', 'in_progress', 'completed', 'cancelled'}
+            VALID_EVENT_TYPES = {'tap_on', 'tap_off'}
+            VALID_REQUEST_STATUSES = {'pending', 'picked_up', 'cancelled'}
+            
+            # Example: Reusable SELECT Fields
+            USER_SELECT = "user_id, user_code, name, email, telephone, role"
+            BUS_SELECT = "bus_id, bus_code, license_plate, bus_capacity, bus_status"
+            TRIP_SELECT = "trip_id, trip_code, route_id, driver_id, bus_id, starting_time, status"
+            
+            # Example: Input Validation Pattern
+            def _validate_input(self, **kwargs):
+                """Centralized validation"""
+                for field, value in kwargs.items():
+                    if field == 'role' and value not in VALID_ROLES:
+                        raise ValueError(f"Invalid role: {value}")
+                    if field == 'email' and not self._is_valid_email(value):
+                        raise ValueError(f"Invalid email: {value}")"""
 Repository for bus model operations.
 
 Handles all database operations related to the bus entity.
