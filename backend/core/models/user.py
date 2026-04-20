@@ -18,11 +18,15 @@ class User(db.Model):
 
     user_id = db.Column(db.Integer, primary_key=True)
     user_code = db.Column(db.String(50), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     telephone = db.Column(db.String(20))
     role = db.Column(db.String(50), nullable=False)
 
-    def __init__(self, email, telephone, role):
+    def __init__(self, email, telephone=None, role=None, name=None, user_id=None, user_code=None):
+        self.user_id = user_id
+        self.user_code = user_code
+        self.name = name
         self.email = email
         self.telephone = telephone
         self.role = role
@@ -34,13 +38,14 @@ class User(db.Model):
         return {
             'user_id': self.user_id,
             'user_code': self.user_code,
+            'name': self.name,
             'email': self.email,
             'telephone': self.telephone,
             'role': self.role
         }
     
     def from_dict(self, data):
-        for field in ['email', 'telephone', 'role']:
+        for field in ['name', 'email', 'telephone', 'role']:
             if field in data:
                 setattr(self, field, data[field])
             else:
@@ -62,7 +67,7 @@ class User(db.Model):
             return True
     @staticmethod
     def validate_role(role):
-        valid_roles = ['admin', 'driver', 'passenger']
+        valid_roles = ['admin', 'driver', 'passenger', 'sales', 'coordinator']
         if role not in valid_roles:
             raise ValueError(f'Invalid role. Valid roles are: {", ".join(valid_roles)}')
         else:

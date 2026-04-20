@@ -30,7 +30,8 @@ CREATE TABLE users (
 CREATE TABLE drivers (
     driver_id SERIAL PRIMARY KEY,
     driver_code TEXT GENERATED ALWAYS AS ('driver-' || driver_id) STORED,
-    user_id INT NOT NULL REFERENCES users (user_id) ON DELETE CASCADE
+    user_id INT NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
+    bus_id INT
 );
 
 -- PASSENGERS (specialized users)
@@ -90,7 +91,8 @@ CREATE TABLE buses (
             'maintenance',
             'decommissioned'
         )
-    )
+    ),
+    route_id INT REFERENCES routes (route_id) ON DELETE SET NULL
 );
 
 -- TRIPS (core operational unit)
@@ -101,6 +103,7 @@ CREATE TABLE trips (
     route_id INT REFERENCES routes (route_id) ON DELETE SET NULL,
     driver_id INT REFERENCES drivers (driver_id) ON DELETE SET NULL,
     bus_id INT REFERENCES buses (bus_id) ON DELETE SET NULL,
+    event_id INT,
     starting_time TIMESTAMP NOT NULL,
     status VARCHAR(50) NOT NULL CHECK (
         status IN (
@@ -166,3 +169,7 @@ CREATE INDEX idx_trip_route ON trips (route_id);
 CREATE INDEX idx_trip_driver ON trips (driver_id);
 
 CREATE INDEX idx_passenger_trip ON passenger_events (trip_id);
+
+ALTER TABLE drivers
+ADD CONSTRAINT fk_drivers_bus
+FOREIGN KEY (bus_id) REFERENCES buses (bus_id) ON DELETE SET NULL;

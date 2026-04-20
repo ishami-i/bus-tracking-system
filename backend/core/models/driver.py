@@ -34,19 +34,14 @@ class Driver(db.Model):
     
     # check if the user_id is valid, it should exist in the users table
     def is_valid_user_id(self):
-        user = User.query.get(self.user_id)
-        if user is None:
-            return "Invalid user_id. It must reference an existing user."
-        return True
+        return User.query.get(self.user_id) is not None
     
     # check if the bus_id is valid, it should exist in the buses table
-    def is_valid_bus_id(self):
-        if self.bus_id is None:
+    def is_valid_bus_id(self, bus_id=None):
+        target_bus_id = self.bus_id if bus_id is None else bus_id
+        if target_bus_id is None:
             return True  # bus_id can be null
-        bus = Bus.query.get(self.bus_id)
-        if bus is None:
-            return "Invalid bus_id. It must reference an existing bus."
-        return True
+        return Bus.query.get(target_bus_id) is not None
     
     # check if the driver is assigned to a bus
     def is_assigned_to_bus(self):
@@ -66,7 +61,7 @@ class Driver(db.Model):
     
     # assign the driver to a bus
     def assign_to_bus(self, bus_id):
-        if not self.is_valid_bus_id():
+        if not self.is_valid_bus_id(bus_id):
             return "Cannot assign driver to bus. The bus_id is not valid."
         self.bus_id = bus_id
         return f"Driver {self.driver_code} has been assigned to bus {bus_id}."
@@ -78,11 +73,7 @@ class Driver(db.Model):
     
     # check if the driver is valid, which means it has a valid user_id and a valid bus_id (if assigned to a bus)
     def is_valid_driver(self):
-        if not self.is_valid_user_id():
-            return "Invalid driver. The user_id is not valid."
-        if self.is_assigned_to_bus() and not self.is_valid_bus_id():
-            return "Invalid driver. The bus_id is not valid."
-        return True
+        return self.is_valid_user_id() and self.is_valid_bus_id()
     
     # check if the driver is eligible for assignment to a bus, which means it is not currently assigned to any bus
     def is_eligible_for_assignment_to_bus(self):
