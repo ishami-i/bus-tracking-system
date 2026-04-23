@@ -36,7 +36,8 @@ def _validate_input(self, **kwargs):
                     if field == 'role' and value not in VALID_ROLES:
                         raise ValueError(f"Invalid role: {value}")
                     if field == 'email' and not self._is_valid_email(value):
-                        raise ValueError(f"Invalid email: {value}")"""
+                        raise ValueError(f"Invalid email: {value}")
+"""
 Repository for bus model operations.
 
 Handles all database operations related to the bus entity.

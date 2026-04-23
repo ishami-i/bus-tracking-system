@@ -1,5 +1,6 @@
 '''
-this is repository for all actions involving the fetching and uploading to the database
+this is repository for all actions involving the fetching and uploading to the database,
+and calculating total distance of the route.
 the route postgresql table looks like this:
 CREATE TABLE routes (
     route_id SERIAL PRIMARY KEY,
@@ -10,7 +11,8 @@ CREATE TABLE routes (
     starting_latitude DECIMAL(10, 7),
     ending_address VARCHAR(255),
     ending_longitude DECIMAL(10, 7),
-    ending_latitude DECIMAL(10, 7)
+    ending_latitude DECIMAL(10, 7),
+    total_distance_km DECIMAL(10, 2)
 );
 '''
 
