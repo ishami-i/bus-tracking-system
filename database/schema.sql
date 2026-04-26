@@ -54,7 +54,8 @@ CREATE TABLE routes (
     starting_latitude DECIMAL(10, 7),
     ending_address VARCHAR(255),
     ending_longitude DECIMAL(10, 7),
-    ending_latitude DECIMAL(10, 7)
+    ending_latitude DECIMAL(10, 7),
+    total_distance_km DECIMAL(10, 2)
 );
 
 -- STOPS
