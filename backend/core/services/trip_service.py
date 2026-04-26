@@ -115,7 +115,13 @@ class TripService:
                 nearest_stop = route_stop
         if speed == 0:
             return "Speed is zero, cannot predict ETA"
+        
+        # return the ETA in hours and minutes format
         eta_hours = min_distance / speed
-        eta_time = datetime.now() + timedelta(hours=eta_hours)         
-        
-        
+        eta_time = datetime.now() + timedelta(hours=eta_hours)
+
+        # return the ETA and adding time spent on the stops to get final ETA
+        # assuming the bus will spend 45 - 60 seconds on each stop
+        time_spent_on_stops = remaining_stops * 60  # in seconds
+        final_eta = eta_time + time_spent_on_stops(seconds=time_spent_on_stops)
+        return final_eta.strftime("%Y-%m-%d %H:%M:%S") 
