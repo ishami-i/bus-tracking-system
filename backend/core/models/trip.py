@@ -21,13 +21,15 @@ class Trip(db.Model):
     trip_code = db.Column(db.String, nullable=False, unique=True)
     route_id = db.Column(db.Integer, db.ForeignKey('routes.route_id', ondelete='SET NULL'))
     driver_id = db.Column(db.Integer, db.ForeignKey('drivers.driver_id', ondelete='SET NULL'))
+    bus_id = db.Column(db.Integer, db.ForeignKey('buses.bus_id', ondelete='SET NULL'))
     event_id = db.Column(db.Integer)  # FK to passenger_events (set after table creation)
     starting_time = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.String(50), nullable=False)
 
-    def __init__(self, route_id, driver_id, event_id, starting_time, status):
+    def __init__(self, route_id, driver_id, event_id, starting_time, status, bus_id=None):
         self.route_id = route_id
         self.driver_id = driver_id
+        self.bus_id = bus_id
         self.event_id = event_id
         self.starting_time = starting_time
         self.status = status
@@ -38,6 +40,7 @@ class Trip(db.Model):
             'trip_code': self.trip_code,
             'route_id': self.route_id,
             'driver_id': self.driver_id,
+            'bus_id': self.bus_id,
             'event_id': self.event_id,
             'starting_time': self.starting_time.isoformat(),
             'status': self.status

@@ -14,9 +14,6 @@ from typing import Optional, Tuple, List, Any
 
 logger = logging.getLogger(__name__)
 
-# constants
-SELECT_FIELDS = "bus_id, bus_code, bus_capacity, license_plate, bus_status, route_id"
-
 class PassengerRepository:
     def __init__(self, db):
         """Initialize repository with database connection."""

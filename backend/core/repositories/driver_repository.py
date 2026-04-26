@@ -18,29 +18,30 @@ from typing import Optional, List
 logger = logging.getLogger(__name__)
 
 # constants
-SELECT_FIELDS = "driver_id, driver_code, user_id"
+SELECT_FIELDS = "driver_id, driver_code, user_id, bus_id"
 
 class DriverRepository:
     def __init__(self, db):
         """Initialize repository with database connection."""
         self.db = db
 
-    def create_driver(self, user_id: int) -> Optional[tuple]:
+    def create_driver(self, user_id: int, bus_id: Optional[int] = None) -> Optional[tuple]:
         """Create a new driver and return the driver information.
         
         Args:
             user_id: The user ID associated with the driver
+            bus_id: Optional bus assignment for the driver
         returns:
             Tuple of driver data or None if creation failed
         """
         query = """
-            INSERT INTO drivers (user_id)
-            VALUES (%s) RETURNING driver_id, driver_code, user_id;
+            INSERT INTO drivers (user_id, bus_id)
+            VALUES (%s, %s) RETURNING driver_id, driver_code, user_id, bus_id;
         """
         cursor = None
         try:
             cursor = self.db.cursor()
-            cursor.execute(query, (user_id,))
+            cursor.execute(query, (user_id, bus_id))
             driver = cursor.fetchone()
             self.db.commit()
             return driver

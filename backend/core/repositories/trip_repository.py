@@ -18,16 +18,16 @@ class TripRepository:
         self.db = db
 
     # creating a new trip
-    def create_trip(self, route_id, driver_id, starting_time, status):
+    def create_trip(self, route_id, driver_id, starting_time, status, bus_id=None, event_id=None):
         query = """
-        INSERT INTO trips (route_id, driver_id, starting_time, status)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO trips (route_id, driver_id, bus_id, event_id, starting_time, status)
+        VALUES (%s, %s, %s, %s, %s, %s)
         RETURNING trip_id;
         """
 
         try:
             cursor = self.db.cursor()
-            cursor.execute(query, (route_id, driver_id, starting_time, status))
+            cursor.execute(query, (route_id, driver_id, bus_id, event_id, starting_time, status))
 
             # get generated id
             trip_id = cursor.fetchone()[0]
@@ -46,7 +46,7 @@ class TripRepository:
     # getting a trip by id
     def get_trip_by_id(self, trip_id):
         query = """
-        SELECT trip_id, trip_code, route_id, driver_id, event_id, starting_time, status
+        SELECT trip_id, trip_code, route_id, driver_id, bus_id, event_id, starting_time, status
         FROM trips
         WHERE trip_id = %s;
         """
@@ -62,9 +62,10 @@ class TripRepository:
                     "trip_code": row[1],
                     "route_id": row[2],
                     "driver_id": row[3],
-                    "event_id": row[4],
-                    "starting_time": row[5],
-                    "status": row[6]
+                    "bus_id": row[4],
+                    "event_id": row[5],
+                    "starting_time": row[6],
+                    "status": row[7]
                 }
             else:
                 return None
@@ -74,11 +75,13 @@ class TripRepository:
             return None
         
     # updating trip data by id
-    def update_trip(self, trip_id, route_id=None, driver_id=None, starting_time=None, status=None):
+    def update_trip(self, trip_id, route_id=None, driver_id=None, bus_id=None, event_id=None, starting_time=None, status=None):
         query = """
         UPDATE trips
         SET route_id = COALESCE(%s, route_id),
             driver_id = COALESCE(%s, driver_id),
+            bus_id = COALESCE(%s, bus_id),
+            event_id = COALESCE(%s, event_id),
             starting_time = COALESCE(%s, starting_time),
             status = COALESCE(%s, status)
         WHERE trip_id = %s
@@ -87,7 +90,7 @@ class TripRepository:
 
         try:
             cursor = self.db.cursor()
-            cursor.execute(query, (route_id, driver_id, starting_time, status, trip_id))
+            cursor.execute(query, (route_id, driver_id, bus_id, event_id, starting_time, status, trip_id))
 
             # get updated id
             updated_trip_id = cursor.fetchone()[0]
@@ -126,7 +129,7 @@ class TripRepository:
     # getting all trips by driver id
     def get_trips_by_driver_id(self, driver_id):
         query = """
-        SELECT trip_id, trip_code, route_id, driver_id, event_id, starting_time, status
+        SELECT trip_id, trip_code, route_id, driver_id, bus_id, event_id, starting_time, status
         FROM trips
         WHERE driver_id = %s;
         """
@@ -143,9 +146,10 @@ class TripRepository:
                     "trip_code": row[1],
                     "route_id": row[2],
                     "driver_id": row[3],
-                    "event_id": row[4],
-                    "starting_time": row[5],
-                    "status": row[6]
+                    "bus_id": row[4],
+                    "event_id": row[5],
+                    "starting_time": row[6],
+                    "status": row[7]
                 })
 
             return trips
@@ -155,11 +159,13 @@ class TripRepository:
             return []
     
     # patch on existing trip, only update the fields that are provided
-    def patch_trip(self, trip_id, route_id=None, driver_id=None, starting_time=None, status=None):
+    def patch_trip(self, trip_id, route_id=None, driver_id=None, bus_id=None, event_id=None, starting_time=None, status=None):
         query = """
         UPDATE trips
         SET route_id = COALESCE(%s, route_id),
             driver_id = COALESCE(%s, driver_id),
+            bus_id = COALESCE(%s, bus_id),
+            event_id = COALESCE(%s, event_id),
             starting_time = COALESCE(%s, starting_time),
             status = COALESCE(%s, status)
         WHERE trip_id = %s
@@ -168,7 +174,7 @@ class TripRepository:
 
         try:
             cursor = self.db.cursor()
-            cursor.execute(query, (route_id, driver_id, starting_time, status, trip_id))
+            cursor.execute(query, (route_id, driver_id, bus_id, event_id, starting_time, status, trip_id))
 
             # get updated id
             updated_trip_id = cursor.fetchone()[0]
@@ -187,7 +193,7 @@ class TripRepository:
     # getting all trips
     def get_all_trips(self):
         query = """
-        SELECT trip_id, trip_code, route_id, driver_id, event_id, starting_time, status
+        SELECT trip_id, trip_code, route_id, driver_id, bus_id, event_id, starting_time, status
         FROM trips;
         """
 
@@ -203,9 +209,10 @@ class TripRepository:
                     "trip_code": row[1],
                     "route_id": row[2],
                     "driver_id": row[3],
-                    "event_id": row[4],
-                    "starting_time": row[5],
-                    "status": row[6]
+                    "bus_id": row[4],
+                    "event_id": row[5],
+                    "starting_time": row[6],
+                    "status": row[7]
                 })
 
             return trips
@@ -217,7 +224,7 @@ class TripRepository:
     # getting all trips by status
     def get_trips_by_status(self, status):
         query = """
-        SELECT trip_id, trip_code, route_id, driver_id, event_id, starting_time, status
+        SELECT trip_id, trip_code, route_id, driver_id, bus_id, event_id, starting_time, status
         FROM trips
         WHERE status = %s;
         """
@@ -234,9 +241,10 @@ class TripRepository:
                     "trip_code": row[1],
                     "route_id": row[2],
                     "driver_id": row[3],
-                    "event_id": row[4],
-                    "starting_time": row[5],
-                    "status": row[6]
+                    "bus_id": row[4],
+                    "event_id": row[5],
+                    "starting_time": row[6],
+                    "status": row[7]
                 })
 
             return trips
@@ -248,7 +256,7 @@ class TripRepository:
     # getting all trips by route id
     def get_trips_by_route_id(self, route_id):
         query = """
-        SELECT trip_id, trip_code, route_id, driver_id, event_id, starting_time, status
+        SELECT trip_id, trip_code, route_id, driver_id, bus_id, event_id, starting_time, status
         FROM trips
         WHERE route_id = %s;
         """
@@ -265,9 +273,10 @@ class TripRepository:
                     "trip_code": row[1],
                     "route_id": row[2],
                     "driver_id": row[3],
-                    "event_id": row[4],
-                    "starting_time": row[5],
-                    "status": row[6]
+                    "bus_id": row[4],
+                    "event_id": row[5],
+                    "starting_time": row[6],
+                    "status": row[7]
                 })
 
             return trips
@@ -279,7 +288,7 @@ class TripRepository:
     # getting all trips by event id
     def get_trips_by_event_id(self, event_id):
         query = """
-        SELECT trip_id, trip_code, route_id, driver_id, event_id, starting_time, status
+        SELECT trip_id, trip_code, route_id, driver_id, bus_id, event_id, starting_time, status
         FROM trips
         WHERE event_id = %s;
         """
@@ -296,9 +305,10 @@ class TripRepository:
                     "trip_code": row[1],
                     "route_id": row[2],
                     "driver_id": row[3],
-                    "event_id": row[4],
-                    "starting_time": row[5],
-                    "status": row[6]
+                    "bus_id": row[4],
+                    "event_id": row[5],
+                    "starting_time": row[6],
+                    "status": row[7]
                 })
 
             return trips
@@ -310,7 +320,7 @@ class TripRepository:
     # getting all trips by starting time range
     def get_trips_by_starting_time_range(self, start_time, end_time):
         query = """
-        SELECT trip_id, trip_code, route_id, driver_id, event_id, starting_time, status
+        SELECT trip_id, trip_code, route_id, driver_id, bus_id, event_id, starting_time, status
         FROM trips
         WHERE starting_time >= %s AND starting_time <= %s;
         """
@@ -327,9 +337,10 @@ class TripRepository:
                     "trip_code": row[1],
                     "route_id": row[2],
                     "driver_id": row[3],
-                    "event_id": row[4],
-                    "starting_time": row[5],
-                    "status": row[6]
+                    "bus_id": row[4],
+                    "event_id": row[5],
+                    "starting_time": row[6],
+                    "status": row[7]
                 })
 
             return trips
@@ -341,7 +352,7 @@ class TripRepository:
     # getting all trips by driver id and status
     def get_trips_by_driver_id_and_status(self, driver_id, status):
         query = """
-        SELECT trip_id, trip_code, route_id, driver_id, event_id, starting_time, status
+        SELECT trip_id, trip_code, route_id, driver_id, bus_id, event_id, starting_time, status
         FROM trips
         WHERE driver_id = %s AND status = %s;
         """
@@ -358,9 +369,10 @@ class TripRepository:
                     "trip_code": row[1],
                     "route_id": row[2],
                     "driver_id": row[3],
-                    "event_id": row[4],
-                    "starting_time": row[5],
-                    "status": row[6]
+                    "bus_id": row[4],
+                    "event_id": row[5],
+                    "starting_time": row[6],
+                    "status": row[7]
                 })
 
             return trips
@@ -372,7 +384,7 @@ class TripRepository:
     # getting all trips by route id and status
     def get_trips_by_route_id_and_status(self, route_id, status):
         query = """
-        SELECT trip_id, trip_code, route_id, driver_id, event_id, starting_time, status
+        SELECT trip_id, trip_code, route_id, driver_id, bus_id, event_id, starting_time, status
         FROM trips
         WHERE route_id = %s AND status = %s;
         """
@@ -389,9 +401,10 @@ class TripRepository:
                     "trip_code": row[1],
                     "route_id": row[2],
                     "driver_id": row[3],
-                    "event_id": row[4],
-                    "starting_time": row[5],
-                    "status": row[6]
+                    "bus_id": row[4],
+                    "event_id": row[5],
+                    "starting_time": row[6],
+                    "status": row[7]
                 })
 
             return trips
@@ -403,7 +416,7 @@ class TripRepository:
     # getting all trips by event id and status
     def get_trips_by_event_id_and_status(self, event_id, status):
         query = """
-        SELECT trip_id, trip_code, route_id, driver_id, event_id, starting_time, status
+        SELECT trip_id, trip_code, route_id, driver_id, bus_id, event_id, starting_time, status
         FROM trips
         WHERE event_id = %s AND status = %s;
         """
@@ -420,9 +433,10 @@ class TripRepository:
                     "trip_code": row[1],
                     "route_id": row[2],
                     "driver_id": row[3],
-                    "event_id": row[4],
-                    "starting_time": row[5],
-                    "status": row[6]
+                    "bus_id": row[4],
+                    "event_id": row[5],
+                    "starting_time": row[6],
+                    "status": row[7]
                 })
 
             return trips
@@ -434,7 +448,7 @@ class TripRepository:
     # getting all trips by starting time range and status
     def get_trips_by_starting_time_range_and_status(self, start_time, end_time, status):
         query = """
-        SELECT trip_id, trip_code, route_id, driver_id, event_id, starting_time, status
+        SELECT trip_id, trip_code, route_id, driver_id, bus_id, event_id, starting_time, status
         FROM trips
         WHERE starting_time >= %s AND starting_time <= %s AND status = %s;
         """
@@ -451,9 +465,10 @@ class TripRepository:
                     "trip_code": row[1],
                     "route_id": row[2],
                     "driver_id": row[3],
-                    "event_id": row[4],
-                    "starting_time": row[5],
-                    "status": row[6]
+                    "bus_id": row[4],
+                    "event_id": row[5],
+                    "starting_time": row[6],
+                    "status": row[7]
                 })
 
             return trips
