@@ -5,28 +5,33 @@
 # the username is operator
 # the password is passcode
 
-# connect to the postgres database
-psql -U postgres -c "CREATE DATABASE bus_system_db;"
+set -e
 
-# check is it is created
-psql -U postgres -c "\l"
-echo "the database is created successfully"
+# Load from .env or use defaults
+DB_NAME="${DB_NAME:-bus_system_db}"
+DB_USER="${DB_USER:-operator}"
+DB_PASSWORD="${DB_PASSWORD:-passcode}"
+DB_HOST="${DB_HOST:-localhost}"
+DB_PORT="${DB_PORT:-5432}"
 
-# create a user for the database
-psql -U postgres -c "CREATE USER operator WITH PASSWORD 'passcode';"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCHEMA_FILE="$SCRIPT_DIR/schema.sql"
 
-# grant all privileges to the user on the database
-psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE bus_system_db TO operator;"
+if [[ ! -f "$SCHEMA_FILE" ]]; then
+    echo "Error: schema.sql not found at $SCHEMA_FILE"
+    exit 1
+fi
 
-# check if the user is created
-psql -U postgres -c "\du"
-echo "the user is created successfully and granted privileges on the database"
+echo "Creating database: $DB_NAME on $DB_HOST:$DB_PORT"
+psql -h "$DB_HOST" -U postgres -p "$DB_PORT" -c "CREATE DATABASE $DB_NAME;" || echo "Database may already exist"
 
-# connect to the database using the new user
-psql -U operator -d bus_system_db -c "\c"
-echo "connected to the database successfully with the new user"
+echo "Creating user: $DB_USER"
+psql -h "$DB_HOST" -U postgres -p "$DB_PORT" -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';" || echo "User may already exist"
 
-# create tables using schema.sql file
-psql -U operator -d bus_system_db -f schema.sql
-echo "tables created successfully using schema.sql file"
+echo "Granting privileges..."
+psql -h "$DB_HOST" -U postgres -p "$DB_PORT" -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
 
+echo "Creating tables from schema..."
+psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -p "$DB_PORT" -f "$SCHEMA_FILE"
+
+echo "✓ Database setup completed successfully"
